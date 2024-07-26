@@ -16,17 +16,14 @@ def get_movie_titles():
 
 def get_scores(movie_titles):
     movie_dict = {key: {} for key in movie_titles}
-    print(movie_dict)
     for movie in movie_titles:
         text = movie.replace(" ", "+")
         link = f"https://www.google.com/search?q={text}+review"
         r = requests.get(link)
         soup = BeautifulSoup(r.text, "html.parser")
         scores = soup.find_all('span', {'class': 'oqSTJd'})
-        print('MOVIE: ', movie)
         for score in scores:
             if (scores.index(score) > 3):
-                print("\n")
                 continue
             elif (get_score_type(score.text) == "RT"):
                 movie_dict[movie]['RTscore'] = float(score.text.replace('%', '').strip())
@@ -45,10 +42,6 @@ def transform_data(movie_dict):
     df_reset.rename(columns={'index': 'MovieTitle'}, inplace=True)
 
     return df_reset
-
-def test():
-    return "true"
-
         
 def get_score_type(score):
     if '%' in score:
