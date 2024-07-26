@@ -36,18 +36,22 @@ def get_scores(movie_titles):
                 score = (float(result[0])/int(result[1])) * 100
                 movie_dict[movie]['IMDBscore'] = round(score, 1)
 
-    return movie_dict   
+    return movie_dict  
+
+
+def transform_data(movie_dict):
+    df_reset = pd.DataFrame.from_dict(movie_dict, orient='index').reset_index()
+    df_reset.dropna(subset=['RTscore', 'IMDBscore'])
+    df_reset.rename(columns={'index': 'MovieTitle'}, inplace=True)
+
+    return df_reset
+
+def test():
+    return "true"
+
         
 def get_score_type(score):
     if '%' in score:
         return "RT"
     elif ('/10' in score):
         return "IMDB"
-        
-titles = get_movie_titles()
-movie_dict = get_scores(titles)
-df_reset = pd.DataFrame.from_dict(movie_dict, orient='index').reset_index()
-df_reset.dropna(subset=['RTscore', 'IMDBscore'])
-df_reset.rename(columns={'index': 'Movie Title'}, inplace=True)
-df_reset.to_csv('out.csv', index=False)
-print(df_reset)
