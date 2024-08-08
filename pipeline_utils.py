@@ -1,9 +1,10 @@
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
-import aiohttp
+from aiohttp import ClientSession
 from db_secrets import secrets 
 from sqlalchemy import create_engine
+from asyncio import gather
 
 class Extract:
 
@@ -12,18 +13,19 @@ class Extract:
         r = requests.get(link)
         soup = BeautifulSoup(r.text, "html.parser")
         poster_cards = soup.findAll('li', {'class': 'poster-card poster-card__fluid browse-movielist--item dark__section'})
-        movie_titles = []
+        movie_dict = {}
         for card in poster_cards:
             title_spans = card.find('span', {'class': 'sr-only'})
-            movie_titles.append(title_spans.text.split('(')[0].strip())
+            title = title_spans.text.split('(')[0].strip()
+            movie_dict[title] = {'IMDBscore' : 0, 'RTscore': 0}
 
-        return movie_titles
+        return movie_dict
     
     async def scores(self, movie_title, movie_dict):
         text = movie_title.replace(" ", "+")
         link = f"https://www.google.com/search?q={text}+review"
-        async with aiohttp.ClientSession() as session:
-            html = await fetch(session, link)
+        async with ClientSession() as session:
+            html = await self.fetch(session, link)
             soup = BeautifulSoup(html, "html.parser")
             scores = soup.find_all('span', {'class': 'oqSTJd'})
             for score in scores:
@@ -47,6 +49,11 @@ class Extract:
     async def fetch(self, session, url):
         async with session.get(url) as response:
             return await response.text()
+    
+    async def get_scores_tasks(self, movie_dict):
+        tasks = [self.scores(movie, movie_dict) for movie in movie_dict.keys()]
+        await gather(*tasks)
+        return movie_dict
         
 class Transform:
     def transform_data(self, movie_dict):
@@ -57,7 +64,7 @@ class Transform:
         return df_reset
     
 class Load:
-    def insert_df_to_table(self, df):
+    def insert_to_db(self, df):
         db_name = "MovieDB"
         db_user = secrets.get('DATABASE_USER')
         db_password = secrets.get('DATABASE_PASSWORD')
