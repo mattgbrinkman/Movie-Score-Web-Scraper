@@ -1,0 +1,50 @@
+# Byte-compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pdb
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+*.egg
+*.whl
+
+# Virtual environment
+venv/
+ENV/
+env/
+*.venv
+
+# IDE / Editor files
+.vscode/
+.idea/
+*.suo
+*.user
+*.swp
+
+# Logs
+*.log
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# Python testing
+.coverage
+nosetests.xml
+test_*.xml
+*.cover
+
+# MySQL dump files
+*.sql
+*.sqlite
+
+# Environment variable files
+.env
+*.env
+
+# System files
+.DS_Store
+Thumbs.db

@@ -1,22 +1,17 @@
-import get_in_theatre_movie_reviews as movie_service
-import connect_database as db_service
-import asyncio
-
-
-async def run_async(movie_titles):
-    movie_dict = {key: {} for key in movie_titles}
-    tasks = [movie_service.get_scores(movie, movie_dict) for movie in movie_titles]
-    await asyncio.gather(*tasks)
-    return movie_dict
-
-
-def main():
-    movie_titles = movie_service.get_movie_titles()
-    movie_dict = asyncio.run(run_async(movie_titles))
-    df = movie_service.transform_data(movie_dict)
-    db_service.insert_df_to_table(df)
-    print("done")
-
+from asyncio import run
+from pipeline_utils import Extract, Transform, Load
 
 if __name__ == "__main__":
-    main()
+    try:
+        ex = Extract()
+        movie_dict = Extract.movie_titles(ex)
+        result = run(ex.get_scores_tasks(movie_dict))
+        
+        tf = Transform()
+        df = Transform.transform_data(tf, movie_dict)
+
+        ld = Load()
+        Load.insert_to_db(ld, df)
+
+    except Exception as e:
+        print('error', e)
