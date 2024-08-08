@@ -9,10 +9,11 @@ def get_movie_titles():
     r = requests.get(link)
     soup = BeautifulSoup(r.text, "html.parser")
     poster_cards = soup.findAll('li', {'class': 'poster-card poster-card__fluid browse-movielist--item dark__section'})
-    movie_titles = []
+    movie_titles = {}
     for card in poster_cards:
         title_spans = card.find('span', {'class': 'sr-only'})
-        movie_titles.append(title_spans.text.split('(')[0].strip())
+        title = title_spans.text.split('(')[0].strip()
+        movie_titles[title] = {'IMDBscore': 0, 'RTscore': 0}
 
     return movie_titles
 
@@ -52,3 +53,9 @@ def get_score_type(score):
 async def fetch(session, url):
     async with session.get(url) as response:
         return await response.text()
+    
+
+async def run_async(movie_dict):
+    tasks = [get_scores(movie, movie_dict) for movie in movie_dict.keys()]
+    await asyncio.gather(*tasks)
+    return movie_dict
