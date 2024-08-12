@@ -2,9 +2,10 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 from aiohttp import ClientSession
-from db_secrets import secrets 
 from sqlalchemy import create_engine
 from asyncio import gather
+import os
+from dotenv import load_dotenv
 
 class Extract:
 
@@ -65,10 +66,11 @@ class Transform:
     
 class Load:
     def insert_to_db(self, df):
-        db_name = "MovieDB"
-        db_user = secrets.get('DATABASE_USER')
-        db_password = secrets.get('DATABASE_PASSWORD')
-        db_port = secrets.get('DATABASE_PORT')
-        db_host = 'localhost'
+        load_dotenv()
+        db_password = os.getenv('DATABASE_PASSWORD')
+        db_name = os.getenv('DATABASE_NAME')
+        db_user = os.getenv('DATABASE_USER')
+        db_port = os.getenv('DATABASE_PORT')
+        db_host = os.getenv('DATABASE_HOST') 
         engine = create_engine(f'postgresql+psycopg2://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}')
         df.to_sql('reviews', engine, if_exists='replace', index=False)
